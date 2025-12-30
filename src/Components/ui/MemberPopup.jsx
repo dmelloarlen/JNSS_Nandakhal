@@ -1,44 +1,54 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-const apiUrl = import.meta.env.VITE_API_URL
+import toast from "react-hot-toast";
+
+const apiUrl = import.meta.env.VITE_API_URL;
 
 export default function MemberPopup({ open, onClose, member }) {
   const [remarkToggle, setRemarkToggle] = useState(false);
   const [adminToggle, setAdminToggle] = useState(false);
+  const [remarkDate, setRemarkDate] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (member) {
       setRemarkToggle(member.remark === "मयत");
       setAdminToggle(Boolean(member.isAdmin));
+      setRemarkDate(member.date || "");
     }
   }, [member]);
 
   if (!open || !member) return null;
 
+  // 🔹 Convert yyyy-mm-dd ➜ dd/mm/yyyy
+  const formatToDDMMYYYY = (date) => {
+    if (!date) return "";
+    if (date.includes("/")) return date; // already formatted
+    const [year, month, day] = date.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
   const handleSave = async () => {
     setLoading(true);
 
     const payload = {
-      remark: remarkToggle ? "मयत" : null,
+      Remark: remarkToggle ? "मयत" : null,
+      DOD: remarkToggle ? formatToDDMMYYYY(remarkDate) : null,
       isAdmin: adminToggle,
     };
 
     try {
-      await axios.patch(
-        `${apiUrl}/ID/${member.ID}`,
-        payload
-      );
+      await axios.patch(`${apiUrl}/ID/${member.ID}`, payload);
 
       console.log("Updated member:", {
         ID: member.ID,
         ...payload,
       });
-
       onClose();
+      toast.success("Updation successful !!");
     } catch (err) {
       console.error("Failed to update member", err);
-      alert("Update failed");
+      toast.error("Update failed");
     } finally {
       setLoading(false);
     }
@@ -89,18 +99,26 @@ export default function MemberPopup({ open, onClose, member }) {
         {localStorage.getItem("admin") && (
           <div className="mt-6 space-y-4">
             <Toggle
-              label="Special Remark (XYZ)"
+              label="Remark as Deceased (मयत)"
               value={remarkToggle}
               onChange={setRemarkToggle}
               activeColor="bg-purple-500"
             />
 
-            <Toggle
-              label="Admin Access"
-              value={adminToggle}
-              onChange={setAdminToggle}
-              activeColor="bg-blue-500"
-            />
+            {/* 🔹 Date Field */}
+            {remarkToggle && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Deceased Date*
+                </label>
+                <input
+                  type="date"
+                  value={remarkDate}
+                  onChange={(e) => setRemarkDate(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+            )}
           </div>
         )}
 
@@ -156,4 +174,3 @@ function Toggle({ label, value, onChange, activeColor }) {
     </div>
   );
 }
-
