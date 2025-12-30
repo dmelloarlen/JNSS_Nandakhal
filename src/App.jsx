@@ -64,7 +64,7 @@ export default function App() {
             Jeshta Nagrik Seva Sangha
           </h1>
           <p className="text-2xl text-center mt-2">
-            Holy Sprit Church, Nandkhal
+            Holy Sprit Church, Nandakhal
           </p>
         </div>
 
