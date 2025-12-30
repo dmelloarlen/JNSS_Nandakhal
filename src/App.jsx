@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Home from "./Components/Home";
 import MembersInfo from "./Components/MembersInfo";
 import AddMember from "./Components/AddMember";
@@ -16,6 +16,8 @@ export default function App() {
   const [popupOpen, setPopupOpen] = useState(false);
   const [members, setMembers] = useState([]);
 
+  const navigate = useNavigate()
+
   useEffect(() => {
     axios
       .get(apiUrl)
@@ -32,12 +34,14 @@ export default function App() {
     console.log(`"${tempValue}"`);
     if (tempValue === adminPassword) {
       localStorage.setItem("admin", "true");
+      setPopupOpen(false);
+      navigate('/')
       window.location.reload();
     }
   };
 
   return (
-    <BrowserRouter>
+    <>
       <header className="bg-blue-900 text-white shadow-lg">
         <div className="flex justify-between bg-slate-500 text-2xl px-4 py-2 cursor-pointer">
           <ArrowBigLeftDash size={30} onClick={() => window.history.back()} />
@@ -50,7 +54,7 @@ export default function App() {
                   localStorage.removeItem("admin");
                   window.location.reload();
                 }}
-              />
+                />
             </div>
           ) : (
             <div className="flex text-xl">
@@ -74,7 +78,7 @@ export default function App() {
             <button
               onClick={() => setPopupOpen(false)}
               className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
-            >
+              >
               ✕
             </button>
 
@@ -90,12 +94,12 @@ export default function App() {
                 value={tempValue}
                 onChange={(e) => setTempValue(e.target.value)}
                 className="w-full rounded-lg border text-black border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
-              />
+                />
 
               <button
                 type="submit"
                 className="w-full bg-blue-600 text-white py-2 rounded-lg mt-6 hover:bg-blue-700"
-              >
+                >
                 Submit
               </button>
             </form>
@@ -105,7 +109,7 @@ export default function App() {
               <button
                 onClick={() => setPopupOpen(false)}
                 className="px-4 py-2 rounded-lg border text-gray-600"
-              >
+                >
                 Cancel
               </button>
             </div>
@@ -120,6 +124,6 @@ export default function App() {
         {/* <Route path="/reports" element={<Reports />} />
         <Route path="/help" element={<Help />} /> */}
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
