@@ -6,6 +6,8 @@ import UpcommingBirthdays from "./Components/UpcommingBirthdays";
 import { ArrowBigLeftDash, LogOut, LogIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
+import { timeBasedGreetingToast } from "./Components/ui/greetingToast";
 // import Reports from "./components/Reports";
 // import Help from "./components/Help";
 const adminPassword = import.meta.env.VITE_ADMIN_PASS;
@@ -19,6 +21,7 @@ export default function App() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    timeBasedGreetingToast()
     axios
       .get(apiUrl)
       .then((response) => {
@@ -31,12 +34,19 @@ export default function App() {
 
   const handleSubmit2 = (e) => {
     e.preventDefault();
-    console.log(`"${tempValue}"`);
+    if (tempValue.trim() === "") {
+      toast.error("Please enter a password !!");
+      return;
+    }
     if (tempValue === adminPassword) {
       localStorage.setItem("admin", "true");
       setPopupOpen(false);
       navigate('/')
       window.location.reload();
+      toast.success("Login Successful!");
+    }else {
+      toast.error("Incorrect Password, Try Again!");
+      setTempValue("");
     }
   };
 
@@ -46,20 +56,19 @@ export default function App() {
         <div className="flex justify-between bg-slate-500 text-2xl px-4 py-2 cursor-pointer">
           <ArrowBigLeftDash size={30} onClick={() => window.history.back()} />
           {localStorage.getItem("admin") ? (
-            <div className="flex text-xl">
-              Logout
-              <LogOut
-                size={30}
+            <div className="flex text-xl" 
                 onClick={() => {
                   localStorage.removeItem("admin");
                   window.location.reload();
-                }}
-                />
+                }}>
+              Logout
+              <LogOut
+                size={30}/>
             </div>
           ) : (
-            <div className="flex text-xl">
+            <div className="flex text-xl" onClick={() => setPopupOpen(true)}>
               Login
-              <LogIn size={30} onClick={() => setPopupOpen(true)} />
+              <LogIn size={30} />
             </div>
           )}
         </div>

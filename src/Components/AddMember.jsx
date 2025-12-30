@@ -1,5 +1,7 @@
 import { use, useEffect, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 const apiUrl = import.meta.env.VITE_API_URL;
 
 export default function AddMember({ members = [] }) {
@@ -12,7 +14,8 @@ export default function AddMember({ members = [] }) {
   });
 
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
+
+  const navigate = useNavigate();
   
   // Unique village list
   const villageOptions = [
@@ -30,11 +33,20 @@ export default function AddMember({ members = [] }) {
     return parseInt(lastID) + 1;
   };
 
+  function formatDateFromInput(value) {
+  if (!value) return "";
+
+  const [yyyy, mm, dd] = value.split("-");
+  return `${dd}/${mm}/${yyyy}`;
+}
+
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.name || !formData.dob || !formData.village) {
-      alert("Please fill all required fields");
+      toast.error("Please fill all required fields");
       return;
     }
 
@@ -49,7 +61,7 @@ export default function AddMember({ members = [] }) {
           {
             ID: nextID,
             Name: `${formData.title} ${formData.name}`,
-            DOB: formData.dob,
+            DOB: formatDateFromInput(formData.dob),
             Village: formData.village,
             Email: formData.email || "",
             RegistrationDate: today,
@@ -62,21 +74,13 @@ export default function AddMember({ members = [] }) {
         payload
       );
 
-      setSuccess("Member added successfully");
-
-      // Update local members (no re-fetch)
-      setMembers([...members, payload.data[0]]);
-
-      setFormData({
-        title: "Mr.",
-        name: "",
-        dob: "",
-        village: "",
-        email: "",
-      });
+      toast.success("Member added successfully");
+      navigate('/');
+      window.location.reload();
+      
     } catch (error) {
       console.error(error);
-      alert("Failed to add member");
+      toast.error("Failed to add member");
     } finally {
       setLoading(false);
     }
@@ -173,10 +177,6 @@ export default function AddMember({ members = [] }) {
             >
             {loading ? "Saving..." : "Add Member"}
           </button>
-
-          {success && (
-            <p className="text-green-600 text-sm mt-2">{success}</p>
-          )}
         </form>
       </> : <div className="text-center text-red-600 m-4 text-xl">You are not an Admin !!</div>}
     </div>
